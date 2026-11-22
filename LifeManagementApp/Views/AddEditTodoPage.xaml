@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             x:Class="LifeManagementApp.Views.AddEditTodoPage"
+             x:DataType="vm:AddEditTodoViewModel"
+             Title="{Binding PageTitle}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+
+            <Label Text="Title *" />
+            <Entry Text="{Binding Title}" Placeholder="What needs to be done?" />
+
+            <Label Text="Priority (1 = low, 5 = high)" />
+            <Picker ItemsSource="{Binding Priorities}" SelectedItem="{Binding Priority}" />
+
+            <Label Text="Due date" />
+            <DatePicker Date="{Binding DueDate}" Format="d.M.yyyy" />
+
+            <Label Text="Category" />
+            <Picker ItemsSource="{Binding Categories}"
+                    SelectedItem="{Binding SelectedCategory}"
+                    Title="Choose category" />
+
+            <Label Text="Notes" />
+            <Editor Text="{Binding Notes}" AutoSize="TextChanges" Placeholder="Optional" />
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding IsDone}" />
+                <Label Text="Done" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- Validointivirhe näkyy vaan kun ErrorMessage ei oo tyhjä -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyToBool}}" />
+
+            <Button Text="Save" Command="{Binding SaveCommand}" />
+            <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="Gray" />
+
+            <!-- Poisto näkyy vaan muokkaustilassa -->
+            <Button Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="IndianRed" IsVisible="{Binding IsEditMode}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

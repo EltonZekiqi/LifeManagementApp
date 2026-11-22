@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
+             x:Class="LifeManagementApp.Views.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="Home">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Sää -->
+            <Label Text="Weather in Vaasa" FontSize="22" FontAttributes="Bold" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyToBool}}" />
+
+            <Border Padding="16" StrokeShape="RoundRectangle 10" IsVisible="{Binding HasWeather}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding Weather.TemperatureC, StringFormat='Temperature: {0:F1} °C'}" FontSize="18" />
+                    <Label Text="{Binding Weather.WindSpeedMs, StringFormat='Wind: {0:F1} m/s'}" FontSize="18" />
+                    <Label Text="{Binding Weather.Time, StringFormat='Updated {0:HH:mm}'}" FontSize="12" TextColor="Gray" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Leijasurffi-ilmotus: näkyy vaan kun tuuli > raja -->
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#1E88E5"
+                    IsVisible="{Binding IsKiteWeather}">
+                <VerticalStackLayout>
+                    <Label Text="🪁 Kitesurf weather!" FontSize="24" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="{Binding WindLimitMs, StringFormat='Wind is over {0} m/s'}" TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Refresh" Command="{Binding LoadCommand}" />
+
+            <!-- Top 3 -->
+            <Label Text="Top 3 to-dos" FontSize="22" FontAttributes="Bold" Margin="0,10,0,0" />
+
+            <!-- BindableLayout: kevyt lista pienelle määrälle, toimii ScrollViewin sisällä -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopTodos}" Spacing="8">
+                <BindableLayout.EmptyView>
+                    <Label Text="No open to-dos 🎉" TextColor="Gray" />
+                </BindableLayout.EmptyView>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:TodoItem">
+                        <Border Padding="12" StrokeShape="RoundRectangle 8">
+                            <Grid ColumnDefinitions="6,*" ColumnSpacing="10">
+                                <BoxView Color="{Binding Priority, Converter={StaticResource PriorityToColor}}" CornerRadius="3" />
+                                <VerticalStackLayout Grid.Column="1">
+                                    <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Priority, StringFormat='Priority {0}'}" FontSize="12" />
+                                    <Label Text="{Binding DueDate, StringFormat='Due {0:d.M.yyyy}'}" FontSize="12" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

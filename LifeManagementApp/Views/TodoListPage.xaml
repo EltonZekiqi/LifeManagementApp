@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LifeManagementApp.ViewModels"
+             xmlns:models="clr-namespace:LifeManagementApp.Models"
+             x:Class="LifeManagementApp.Views.TodoListPage"
+             x:DataType="vm:TodoListViewModel"
+             Title="To-dos">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="10">
+
+        <!-- Järjestysnapit -->
+        <HorizontalStackLayout Spacing="8">
+            <Button Text="Sort: priority" Command="{Binding SortByPriorityCommand}" />
+            <Button Text="Sort: due date" Command="{Binding SortByDueDateCommand}" />
+        </HorizontalStackLayout>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+            <Label Text="{Binding SortLabel}" VerticalOptions="Center" TextColor="Gray" />
+            <Button Grid.Column="1" Text="+ Add to-do" Command="{Binding AddCommand}" />
+        </Grid>
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Todos}" SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <Label Text="No to-dos yet. Add one!" HorizontalOptions="Center" Margin="20" TextColor="Gray" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <!-- Rivin BindingContext on yks TodoItem -->
+                <DataTemplate x:DataType="models:TodoItem">
+                    <Border Margin="0,4" Padding="10" StrokeShape="RoundRectangle 8">
+
+                        <!-- Rivin napautus -> muokkaus. Rivin BindingContext on TodoItem, joten
+                             EditCommand haetaan sivun ViewModelista RelativeSourcella -->
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:TodoListViewModel}}, x:DataType=vm:TodoListViewModel}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="6,*" ColumnSpacing="10">
+                            <BoxView Color="{Binding Priority, Converter={StaticResource PriorityToColor}}" CornerRadius="3" />
+
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="{Binding Title}" FontAttributes="Bold">
+                                    <!-- Tehty -> yliviivattu ja harmaa -->
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsDone}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough" />
+                                            <Setter Property="TextColor" Value="Gray" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding Priority, StringFormat='Priority {0}'}" FontSize="12" />
+                                <Label Text="{Binding DueDate, StringFormat='Due {0:d.M.yyyy}'}" FontSize="12" />
+                                <Label Text="{Binding Category.Name}" FontSize="12" TextColor="Gray" />
+                            </VerticalStackLayout>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
