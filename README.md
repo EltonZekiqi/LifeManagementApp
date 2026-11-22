@@ -1,33 +1,51 @@
 # LifeManagementApp
 
-.NET MAUI app for managing everyday life. It combines to-do list with weather and tells when it is kitesurfing weather.
+Mun projekti Client-Side Programming -kurssille (TT00BI73, VAMK, syksy 2026).
+Tekijä: Elton Zekiqi
 
-Course: Client-Side Programming (TT00BI73), VAMK, autumn 2026
-Author: Elton Zekiqi
+Eli tää on .NET MAUI -appi, jossa on to-do-lista ja sää samassa paikassa. Lisäks se kertoo, jos on leijasurffikeli.
 
-## Description
+## Mitä appi tekee
 
-- **Home page** shows top 3 open to-dos (highest priority first, then earliest due date), current weather in Vaasa from Open-Meteo (temperature and wind in m/s) and big "🪁 Kitesurf weather!" notice when wind is over 5 m/s.
-- **To-dos page** shows all to-dos in CollectionView. List can be sorted by priority or by due date. From here you can add new to-do or tap a row to edit it.
-- **Add / edit page** is a form with title, priority 1–5, due date, category, notes and done. Empty title is not accepted. In edit mode there is also Delete button.
-- Data is saved to SQLite database with EF Core Code First. To-do has category (Category 1–N TodoItem).
-- If there is no network the app shows error message and does not crash. Loading spinner is shown while weather loads.
+**Etusivu**
+- Näyttää 3 tärkeintä tehtävää, jotka ei oo vielä tehty. Ensin isoin prioriteetti, ja jos on tasan, nii se jonka eräpäivä on aikasemmin.
+- Näyttää Vaasan sään Open-Meteosta (lämpötila + tuuli m/s).
+- Jos tuulee yli 5 m/s, tulee iso sininen "🪁 Leijasurffikeli!" -laatikko.
 
-## How to run
+**Tehtävät**
+- Kaikki tehtävät listassa.
+- Voi järjestää prioriteetin tai eräpäivän mukaan.
+- "+ Lisää tehtävä" -napista pääsee lisäämään uuden.
+- Kun napauttaa tehtävää, pääsee muokkaamaan sitä.
 
-Requirements: .NET 9 SDK and MAUI workload (`dotnet workload install maui`), Windows or Android.
+**Lisää / muokkaa**
+- Otsikko, prioriteetti 1–5, eräpäivä, kategoria, muistiinpanot ja tehty-ruksi.
+- Tyhjällä otsikolla ei voi tallentaa, tulee punanen virhe.
+- Muokatessa näkyy myös Poista-nappi.
+
+**Muuta**
+- Tehtävät menee SQLite-tietokantaan (EF Core Code First), eli ne ei katoo kun appin sulkee.
+- Tehtävällä voi olla kategoria (Koulu, Työ, Koti, Urheilu). Eli yhellä kategorialla voi olla monta tehtävää.
+- Jos ei oo nettiä, appi näyttää virheen eikä kaadu. Kun sää latautuu, pyörii latausympyrä.
+
+## Miten saa käyntiin
+
+Tarvii .NET 9 SDK:n ja MAUI-workloadin (`dotnet workload install maui`). Mä oon testannu Windowsilla.
 
 ```
 git clone <repo-url>
 cd LifeManagementApp
-dotnet build LifeManagementApp/LifeManagementApp.csproj -t:Run -f net9.0-windows10.0.19041.0
+dotnet build LifeManagementApp/LifeManagementApp.csproj -f net9.0-windows10.0.19041.0
+dotnet run --project LifeManagementApp/LifeManagementApp.csproj -f net9.0-windows10.0.19041.0
 ```
 
-Or open `LifeManagementApp.sln` in Visual Studio 2022, choose Windows Machine or Android emulator and press F5.
+Tai sit avaa `LifeManagementApp.sln` Visual Studiossa, valitse Windows Machine ja paina F5.
 
-Note: database is created with `EnsureCreated()`. If you change model (for example add new field to TodoItem), old database does not get the new column. Then delete the app data (uninstall app, or delete `lifemanagement.db3` from app data folder) and start again.
+`global.json` on siks, että projekti käyttää .NET 9:ää vaikka koneella ois uudempikin.
 
-## Project structure
+Huom: tietokanta tehään `EnsureCreated()`:lla. Jos lisää uuden kentän esim. TodoItemiin, vanha kanta ei päivity. Silloin pitää poistaa `lifemanagement.db3` ja käynnistää uudestaan.
+
+## Kansiot
 
 ```
 LifeManagementApp/
@@ -38,20 +56,22 @@ LifeManagementApp/
 │                  TodoSorter, KiteRules, TodoValidator, AppRoutes
 ├── Converters/    StringNotEmptyToBoolConverter, PriorityToColorConverter
 ├── Data/          AppDbContext
-├── AppShell.xaml  (tabs + route for add/edit page)
-└── MauiProgram.cs (DI registrations)
+├── AppShell.xaml  välilehdet + reitti lisää/muokkaa-sivulle
+└── MauiProgram.cs DI-rekisteröinnit
 ```
 
-## Architecture
+## Miten se on rakennettu
 
-MVVM. Views have only XAML and small code-behind (constructor + OnAppearing). ViewModels use CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`) and do not know UI controls. Data access and HTTP are in services behind interfaces. Everything is wired with dependency injection in `MauiProgram.cs`.
+MVVM. Sivuilla on vaan XAML ja tosi vähän code-behindiä (konstruktori + OnAppearing). Kaikki logiikka on ViewModeleissa, ja niissä käytetään CommunityToolkit.Mvvm:ää (`[ObservableProperty]`, `[RelayCommand]`). ViewModelit ei koske suoraan mihinkään UI-kontrolleihin.
 
-DI lifetimes:
-- **Singleton**: TodoRepository, HttpClient, OpenMeteoWeatherService. They have no own state so one instance is enough. One shared HttpClient so sockets are reused.
-- **Transient**: ViewModels and pages. New instance every time, so for example add/edit form always starts clean.
-- **DbContextFactory**: repository makes new short DbContext for every operation.
+Tietokantajutut ja sään haku on serviceissä, ja niillä on rajapinnat (`ITodoRepository`, `IWeatherService`). Kaikki kytketään yhteen `MauiProgram.cs`:ssä dependency injectionilla.
 
-## Class diagram
+Miks Singleton vai Transient:
+- **Singleton**: TodoRepository, HttpClient, OpenMeteoWeatherService. Niillä ei oo omaa tilaa, joten yks riittää koko appiin. HttpClientiä ei kannata tehä aina uutta, koska socketit voi loppua.
+- **Transient**: ViewModelit ja sivut. Joka kerta tulee uus, joten esim. lomake on aina tyhjä kun sen avaa.
+- **DbContextFactory**: repository tekee joka operaatioon oman lyhyen DbContextin.
+
+## Luokkakaavio
 
 ```mermaid
 classDiagram
@@ -102,11 +122,11 @@ classDiagram
     AddEditTodoPage --> AddEditTodoViewModel
 ```
 
-## Extra features (bonus)
+## Lisäjutut (bonus)
 
-- Mark to-do done, edit and delete (on edit page)
-- Categories (1–N relation)
+- Tehtävän voi merkata tehdyks, muokata ja poistaa (muokkaussivulla)
+- Kategoriat (1–N-relaatio)
 
-## AI use
+## Tekoäly
 
-I used Claude (Anthropic) to generate the first version of the code and this README. After that I went through every file, ran the app and tested features myself, and asked Claude to explain parts I did not understand (for example DI lifetimes, DbContextFactory and compiled bindings). I made changes to the code myself to check that I understand how it works.
+Käytin Claudea apuna koodin  ja tän readme kirjottamiseen. Sen jälkeen kävin koodin läpi, testasin appia itse ja kyselin Claudelta selityksiä kohtiin joita en tajunnu
