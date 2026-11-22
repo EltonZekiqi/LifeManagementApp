@@ -3,7 +3,7 @@
 Mun projekti Client-Side Programming -kurssille (TT00BI73, VAMK, syksy 2026).
 Tekijä: Elton Zekiqi
 
-Eli tää on .NET MAUI -appi, jossa on to-do-lista ja sää samassa paikassa. Lisäks se kertoo, jos on leijasurffikeli.
+Eli tää on .NET MAUI -appi, jossa on to-do-lista ja sää samassa paikassa. Lisäks se kertoo, jos on leijasurffaus sää.
 
 ## Mitä appi tekee
 
