@@ -1,36 +1,36 @@
 # LifeManagementApp
 
-Mun projekti Client-Side Programming -kurssille (TT00BI73, VAMK, syksy 2026).  
+Client-Side Programming -kurssin projekti (TT00BI73, VAMK, syksy 2026).
 Tekijä: Elton Zekiqi
 
-Tein .NET MAUI -sovelluksen, jossa on to-do-lista ja Vaasan sää samassa paikassa. Lisäksi appi kertoo, jos tuuli riittää leijasurffaukseen.
+Tein .NET MAUI -apin, missä on to-do-lista ja Vaasan sää samassa. Lisäks se näyttää, jos on hyvä keli leijasurffaukseen.
 
-## Mitä sovellus tekee
+## Mitä tää tekee
 
 **Etusivu**
-- Näyttää 3 tärkeintä tekemätöntä tehtävää. Ensin korkein prioriteetti, ja jos menee tasan, niin aikaisempi eräpäivä voittaa.
-- Hakee Vaasan sään Open-Meteosta (lämpötila ja tuulen nopeus m/s).
-- Jos tuulee yli 5 m/s, ruudulle tulee iso sininen "🪁 Leijasurffikeli!" -laatikko.
+- Näyttää 3 tärkeintä tekemätöntä tehtävää (isoin prioriteetti ekana, tasatilanteessa aikaisempi eräpäivä).
+- Hakee Vaasan sään Open-Meteosta (lämpötila + tuuli m/s).
+- Jos tuulee yli 5 m/s, tulee iso sininen "🪁 Leijasurffikeli!" -laatikko.
 
 **Tehtävät**
-- Listaa kaikki tehtävät.
-- Tehtävät voi järjestää prioriteetin tai eräpäivän mukaan.
-- "+ Lisää tehtävä" -napista avautuu uuden tehtävän näkymä.
-- Tehtävää napauttamalla pääsee muokkaamaan sitä.
+- Kaikki tehtävät listassa.
+- Voi järjestää prioriteetin tai eräpäivän mukaan.
+- "+ Lisää tehtävä" -napista pääsee lisäämään uuden.
+- Tehtävää painamalla pääsee muokkaamaan sitä.
 
 **Lisää / muokkaa**
-- Kentät: otsikko, prioriteetti (1–5), eräpäivä, kategoria, muistiinpanot ja tehty-ruksi.
-- Ilman otsikkoa ei voi tallentaa, vaan tulee punainen virheilmoitus.
+- Otsikko, prioriteetti 1–5, eräpäivä, kategoria, muistiinpanot ja tehty-ruksi.
+- Tyhjällä otsikolla ei voi tallentaa (tulee punainen virhe).
 - Muokatessa näkyy myös Poista-nappi.
 
 **Muuta**
-- Tehtävät tallentuvat SQLiteen (EF Core Code First), joten ne säilyvät sovelluksen sulkemisen jälkeen.
-- Kategoriat (Koulu, Työ, Koti, Urheilu) ovat omassa taulussa (1–N-suhde: yhdellä kategorialla voi olla monta tehtävää).
-- Jos verkkoyhteys puuttuu, säästä näytetään virheilmoitus eikä sovellus kaadu. Latauksen aikana näkyy latausympyrä.
+- Tehtävät tallentuu SQLite-kantaan (EF Core Code First), eli ne pysyy tallessa vaikka apin sulkee.
+- Kategoriat (Koulu, Työ, Koti, Urheilu) on omassa taulussa (1–N-suhde).
+- Jos ei oo nettiä, appi näyttää virheen eikä kaadu. Latauksen aikana pyörii latausympyrä.
 
-## Käynnistäminen
+## Miten saa käyntiin
 
-Tarvitset .NET 9 SDK:n ja MAUI-workloadin (`dotnet workload install maui`). Olen testannut sovelluksen Windowsilla.
+Tarvii .NET 9 SDK:n ja MAUI-workloadin (`dotnet workload install maui`). Testattu Windowsilla.
 
 ```bash
 git clone <repo-url>
@@ -39,13 +39,13 @@ dotnet build LifeManagementApp/LifeManagementApp.csproj -f net9.0-windows10.0.19
 dotnet run --project LifeManagementApp/LifeManagementApp.csproj -f net9.0-windows10.0.19041.0
 ```
 
-Vaihtoehtoisesti voit avata `LifeManagementApp.sln` Visual Studiossa, valita Windows Machinen ja painaa F5.
+Tai sit avaa `LifeManagementApp.sln` Visual Studiossa, valitse Windows Machine ja paina F5.
 
-Projektissa on `global.json`, jotta .NET 9 pysyy käytössä vaikka koneella olisi uudempiakin SDK-versioita.
+`global.json` on siks, että projekti käyttää .NET 9:ää vaikka koneella ois uudempikin versio.
 
-> **Huom:** Tietokanta luodaan `EnsureCreated()`-metodilla. Jos muutat tietokantamalleja (esim. lisäät kentän `TodoItem`-luokkaan), vanha kanta ei päivity automaattisesti. Silloin pitää poistaa `lifemanagement.db3` ja käynnistää sovellus uudestaan.
+Huom: tietokanta tehdään `EnsureCreated()`:lla. Jos lisää uuden kentän esim. TodoItemiin, vanha kanta ei päivity itestään, vaan pitää poistaa `lifemanagement.db3` ja käynnistää uudestaan.
 
-## Projektin rakenne
+## Kansiot
 
 ```text
 LifeManagementApp/
@@ -56,19 +56,19 @@ LifeManagementApp/
 │                  TodoSorter, KiteRules, TodoValidator, AppRoutes
 ├── Converters/    StringNotEmptyToBoolConverter, PriorityToColorConverter
 ├── Data/          AppDbContext
-├── AppShell.xaml  välilehdet ja reititys
+├── AppShell.xaml  välilehdet + reitti lisää/muokkaa-sivulle
 └── MauiProgram.cs DI-rekisteröinnit
 ```
 
-## Toteutus ja arkkitehtuuri
+## Miten se on tehty
 
-Sovellus noudattaa MVVM-mallia. Sivuilla (`Views`) on pääosin XAML:ia ja code-behindissa vain perusjutut (konstruktori ja `OnAppearing`). Sovelluslogiikka on ViewModeleissa, ja niissä on käytetty CommunityToolkit.Mvvm-kirjastoa (`[ObservableProperty]`, `[RelayCommand]`). ViewModelit eivät käsittele suoraan UI-kontrolleja.
+MVVM-mallilla. Sivuilla on vaan XAML ja tosi vähän code-behindiä (konstruktori + OnAppearing). Logiikka on ViewModeleissa, ja niissä on käytetty CommunityToolkit.Mvvm:ää (`[ObservableProperty]`, `[RelayCommand]`). ViewModelit ei koske suoraan UI-kontrolleihin.
 
-Tietokanta- ja säälogiikka on erotettu omiin serviceihin rajapintojen (`ITodoRepository`, `IWeatherService`) taakse, ja kaikki kytketään yhteen `MauiProgram.cs`-tiedostossa dependency injectionilla.
+Tietokanta- ja sääjutut on serviceissä rajapintojen (`ITodoRepository`, `IWeatherService`) takana, ja kaikki kytketään yhteen `MauiProgram.cs`:ssä dependency injectionilla.
 
-- **Singleton**: `TodoRepository`, `HttpClient` ja `OpenMeteoWeatherService`. Näillä ei ole omaa tilaa, joten yksi instanssi riittää koko sovelluksen elinkaaren ajan (ja `HttpClient` kannattaa muutenkin pitää jaettuna, ettei socketit lopu).
-- **Transient**: ViewModelit ja sivut. Näistä luodaan uusi instanssi joka kerta, jotta esimerkiksi lisäyslomake on aina tyhjä kun sen avaa.
-- **DbContext**: Repository luo jokaista tietokantaoperaatiota varten oman lyhytikäisen `DbContext`-instanssin.
+- **Singleton**: TodoRepository, HttpClient ja OpenMeteoWeatherService. Niillä ei oo omaa tilaa, niin yks riittää (ja HttpClientiä ei kannata tehdä aina uutta ettei socketit lopu).
+- **Transient**: ViewModelit ja sivut. Tulee aina uus, eli esim. lomake on tyhjä kun sen avaa.
+- **DbContext**: Repository tekee joka operaatioon oman lyhyen DbContextin.
 
 ## Luokkakaavio
 
@@ -121,6 +121,6 @@ classDiagram
     AddEditTodoPage --> AddEditTodoViewModel
 ```
 
-## Tekoälyn käyttö
+## Tekoäly
 
-Hyödynsin tekoälyä (Claudea) apuna koodin kirjoittamisessa ja README:n luonnostelussa. Kävin koodin läpi, kyselin selityksiä niistä kohdista jotka kaipasivat tarkennusta, testasin sovelluksen toiminnan itse ja muokkasin kokonaisuuden omaan tyyliini.
+Käytin Claudea apuna koodin ja tän readmen kirjottamisessa. Kävin koodit läpi, testasin apin ite ja kyselin selityksiä kohtiin mitä en heti tajunnu.
